@@ -1,3 +1,4 @@
+const { Comp1, main } = require("./js/comp1");
 class Test {
   constructor() {}
 
@@ -7,8 +8,8 @@ class Test {
   }
 }
 const x = new Test();
+new Comp1().fn1();
 x.hello();
-const fsPromises = require("fs").promises;
-(async() => {
-    const {aaa: content} = await Promise.resolve({aaa: 123});
-})();
+import("./js/comp3").then(({Comp3}) => {
+  console.log(Comp3);
+})
