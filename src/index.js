@@ -8,7 +8,7 @@ class Test {
 }
 const x = new Test();
 x.hello();
-const fsPromises = require("fs").promises;
-(async() => {
-    const {aaa: content} = await Promise.resolve({aaa: 123});
-})();
+// const fsPromises = require("fs").promises;
+// (async() => {
+//     const {aaa: content} = await Promise.resolve({aaa: 123});
+// })();

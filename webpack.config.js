@@ -1,5 +1,7 @@
 const path = require("path");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+const Uglify = require("uglifyjs-webpack-plugin");
+const optimize = require("webpack").optimize;
 
 const {entry, jsRule} = (() => {
     const entry = {};
@@ -46,7 +48,7 @@ const {entry, jsRule} = (() => {
 })();
 
 module.exports = env => ({
-    mode: env.mode,
+    // mode: env.mode,
     entry,
     output: {
         path: path.resolve(__dirname, "./dist"),
@@ -55,7 +57,7 @@ module.exports = env => ({
     },
     module: {
         rules: [
-            jsRule,
+            // jsRule,
             // {
             //     test: /\.css$/,
             //     use: [
@@ -79,14 +81,29 @@ module.exports = env => ({
             //     ]
             // }
             {
-                test: /\.tsx?$/,
+                test: /\.jsx?$/,
                 exclude: /node_modules/,
                 use: [
                     {
-                        loader: "ts-loader"
+                        loader: "babel-loader",
+                        options: {
+                            babelrc: false,
+                            presets: [
+                                ["env", {targets: {chrome: 72, uglify: false}}]
+                            ]
+                        }
                     }
                 ]
-            }
+            },
+            // {
+            //     test: /\.tsx?$/,
+            //     exclude: /node_modules/,
+            //     use: [
+            //         {
+            //             loader: "ts-loader"
+            //         }
+            //     ]
+            // }
         ]
     },
     plugins: [
@@ -96,6 +113,14 @@ module.exports = env => ({
             root: __dirname,
             exclude: [],
             verbose: false
+        }),
+        new Uglify({
+            uglifyOptions: {
+                sourceMap: true,
+                compress: {
+                  warnings: false
+                }
+            }
         })
     ]
 });
