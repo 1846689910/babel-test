@@ -39,15 +39,13 @@ module.exports = {
       "@babel/preset-env",
       {
         targets: {
-            node: "8"
+          ie: "5"
         }
       }
     ],
     "@babel/preset-typescript"
   ],
-  plugins: [
-      ["@babel/plugin-transform-typescript", {isTSX: true}]
-  ]
+  plugins: [["@babel/plugin-transform-typescript", { isTSX: true }]]
 };
 
 /*
