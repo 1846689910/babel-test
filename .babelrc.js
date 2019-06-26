@@ -46,7 +46,8 @@ module.exports = {
     "@babel/preset-typescript"
   ],
   plugins: [
-      ["@babel/plugin-transform-typescript", {isTSX: true}]
+      ["@babel/plugin-transform-typescript", {isTSX: true}],
+      "@babel/plugin-syntax-dynamic-import"
   ]
 };
 

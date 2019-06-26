@@ -1,14 +1,9 @@
 class Test {
   constructor() {}
-
-  hello(height = 50) {
-    console.log("hello, world", height);
-    console.log(`hello, template ${height}`);
+  run(){
+    console.log("running");
+    import("./student").then(({default: tim}) => console.log(tim.learn()));
   }
 }
-const x = new Test();
-x.hello();
-const fsPromises = require("fs").promises;
-(async() => {
-    const {aaa: content} = await Promise.resolve({aaa: 123});
-})();
+const t = new Test();
+t.run();
