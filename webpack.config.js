@@ -1,101 +1,81 @@
-const path = require("path");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+/**
+for webpack:
+npm i webpack webpack-cli webpack-dev-server --save-dev
 
-const {entry, jsRule} = (() => {
-    const entry = {};
-    const jsRule = {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-    };
-    if (process.env.babelEnvTargets) {
-        const oneOf = [];
-        const babelEnvTargets = JSON.parse(process.env.babelEnvTargets);
-        Object.entries(babelEnvTargets).forEach(([k, v]) => {
-            entry[k] = ["@babel/polyfill", `${__dirname}/src/index.js?${k}`];
-            oneOf.push({
-                resourceQuery: new RegExp(k),
-                use: [
-                    {
-                        loader: "babel-loader",
-                        options: {
-                            presets: [
-                                ["@babel/preset-env", {
-                                    targets: v
-                                }]
-                            ]
-                        }
-                    }
-                ]
-            });
-        });
-        jsRule.oneOf = oneOf;
-    } else {
-        entry.main = `${__dirname}/src/index.js`;
-        jsRule.use = [
-            {
-                loader: "babel-loader",
-                options: {
-                    presets: [
-                        ["@babel/preset-env"]
-                    ]
-                }
-            }
-        ];
-    }
-    return {entry, jsRule};
-})();
+for simple webpack config
+npm i autoprefixer@^9.6.0 babel-loader@^8.0.4 css-loader@^2.1.1 file-loader@^4.2.0 postcss-import@^12.0.1 postcss-loader@^3.0.0 postcss-preset-env@^6.7.0 url-loader@^2.1.0 --save-dev
 
-module.exports = env => ({
-    mode: env.mode,
-    entry,
-    output: {
-        path: path.resolve(__dirname, "./dist"),
-        publicPath: "/",
-        filename: `./[name]/bundle.js`
-    },
-    module: {
-        rules: [
-            jsRule,
-            // {
-            //     test: /\.css$/,
-            //     use: [
-            //         {
-            //             loader: "style-loader"
-            //         },
-            //         {
-            //             loader: "css-loader"
-            //         }
-            //     ]
-            // },
-            // {
-            //     test: /\.(png|gif|jpg)$/,
-            //     use: [
-            //         {
-            //             loader: "file-loader",
-            //             options: {
-            //                 name: "images/[name].[ext]"
-            //             }
-            //         }
-            //     ]
-            // }
-            {
-                test: /\.tsx?$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: "ts-loader"
-                    }
-                ]
+for babel:
+rest `@babel/*` and `babel-*` packages
+
+*/
+
+const babelLoader = require.resolve("babel-loader");
+const cssLoader = require.resolve("css-loader");
+const postcssLoader = require.resolve("postcss-loader");
+const atImport = require("postcss-import");
+const postcssPresetEnv = require("postcss-preset-env");
+const autoprefixer = require("autoprefixer");
+const fileLoader = require.resolve("file-loader");
+const urlLoader = require.resolve("url-loader");
+
+module.exports = {
+  mode: "production",
+  module: {
+    rules: [
+      {
+        test: /\.[tj]sx?$/,
+        use: [babelLoader]
+      },
+      {
+        test: /\.css/,
+        use: [
+          {
+            loader: cssLoader
+          },
+          {
+            loader: postcssLoader,
+            options: {
+              ident: "postcss",
+              plugins: loader => [
+                autoprefixer(),
+                atImport({ root: loader.resourcePath }),
+                postcssPresetEnv()
+              ]
             }
+          }
         ]
-    },
-    plugins: [
-        new CleanWebpackPlugin([
-            `${__dirname}/dist/*`
-        ], {
-            root: __dirname,
-            exclude: [],
-            verbose: false
-        })
+      },
+      {
+        test: /\.(jpe?g|png|gif|svg|ico)(\?\S*)?$/i,
+        use: [
+          {
+            loader: fileLoader,
+            options: {
+              limit: 10000,
+              name() {
+                return "[name].[ext]";
+              }
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(woff|woff2)(\?\S*)?$/i,
+        use: [
+          {
+            loader: urlLoader,
+            options: {
+              limit: 1000,
+              mimetype: "application/font-woff"
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(eot|ttf)(\?\S*)?$/i,
+        use: [fileLoader]
+      }
     ]
-});
+  }
+};
