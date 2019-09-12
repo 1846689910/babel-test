@@ -4,11 +4,9 @@
   "description": "basic & general configuration for babel and webpack",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack --env.mode=development",
-    "dev-legacy": "webpack --env.mode=development --env.legacy",
-    "build": "webpack --env.mode=production",
-    "bundle": "npm-run-all -p dev dev-legacy"
+    "test": "mocha test/**/*.spec.js --recursive",
+    "lint": "eslint src/**/*.js[x]",
+    "build": "webpack"
   },
   "keywords": [],
   "author": "Eric He",
