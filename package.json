@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha test/**/*.spec.js --recursive",
     "lint": "eslint src/**/*.js[x]",
-    "build": "webpack"
+    "build": "webpack --env.isProduction",
+    "start": "webpack-dev-server --env.isDevelopment"
   },
   "keywords": [],
   "author": "Eric He",

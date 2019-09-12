@@ -7,3 +7,11 @@ class Student {
   }
 }
 const s = new Student("Alex", 21);
+console.log("Hello World");
+console.log(s.name);
+document.body.appendChild((() => {
+  const h1 = document.createElement("h1");
+  h1.innerHTML = "Hello! babel-test";
+  h1.style.alignSelf = "center";
+  return h1;
+})());

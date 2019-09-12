@@ -26,129 +26,147 @@ const webpack = require("webpack");
 const StatsWriterPlugin = require("webpack-stats-plugin").StatsWriterPlugin;
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-
-module.exports = {
-  mode: "production",
-  entry: { main: [Path.resolve("src/client/js/index.js")] }, // with polyfill: { main: ["core-js", "regenerator-runtime/runtime", "src/client/js/index.js"] }
-  output: {
-    path: Path.resolve("dist/js"),
-    publicPath: "/js/",
-    chunkFilename: "[hash].[name].js",
-    filename: "[name].bundle.[hash].js"
-  },
-  module: {
-    rules: [
-      {
-        test: /\.[tj]sx?$/,
-        use: [babelLoader]
-      },
-      {
-        test: /\.css/,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-            options: { publicPath: "" }
-          },
-          {
-            loader: cssLoader
-          },
-          {
-            loader: postcssLoader,
-            options: {
-              ident: "postcss",
-              plugins: loader => [
-                autoprefixer(),
-                atImport({ root: loader.resourcePath }),
-                postcssPresetEnv()
-              ]
-            }
-          }
+module.exports = env => {
+  const { isProduction } = env;
+  return {
+    mode: isProduction ? "production" : "development",
+    entry: { main: [Path.resolve("src/client/js/index.js")] }, // with polyfill: { main: ["core-js", "regenerator-runtime/runtime", "src/client/js/index.js"] }
+    output: {
+      path: Path.resolve("dist/js"),
+      publicPath: "/js/",
+      chunkFilename: "[hash].[name].js",
+      filename: "[name].bundle.[hash].js"
+    },
+    devServer: {
+      historyApiFallback: {
+        rewrites: [
+          // TODO: could setup api rewrites here.
+          { from: /^\/$/, to: "/js/index.html" } // after `publicPath` set to /js/, the index page, needs to be retrieved under /
         ]
       },
-      {
-        test: /\.(jpe?g|png|gif|svg|ico)(\?\S*)?$/i,
-        use: [
-          {
-            loader: fileLoader,
-            options: {
-              limit: 10000,
-              name: "[hash].[ext]"
-            }
-          }
-        ]
+      hot: true,
+      overlay: {
+        errors: true,
+        warnings: true
       },
-      {
-        test: /\.(woff|woff2)(\?\S*)?$/i,
-        use: [
-          {
-            loader: urlLoader,
-            options: {
-              limit: 1000,
-              mimetype: "application/font-woff"
-            }
-          }
-        ]
-      },
-      {
-        test: /\.(eot|ttf)(\?\S*)?$/i,
-        use: [fileLoader]
-      }
-    ]
-  },
-  resolve: {
-    extensions: [".js", ".jsx", ".json", ".ts", ".tsx"]
-  },
-  plugins: [
-    new MiniCssExtractPlugin({
-      filename: "[name].style.[hash].css"
-    }),
-    new OptimizeCssAssetsPlugin({
-      cssProcessorOptions: {
-        zindex: false
-      }
-    }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true,
-      options: {
-        context: Path.resolve("src")
-      }
-    }),
-    new CleanWebpackPlugin(),
-    new StatsWriterPlugin({
-      filename: "../server/stats.json",
-      fields: ["assetsByChunkName", "assets"]
-    }),
-    new HtmlWebpackPlugin({
-      title: "babel-test",
-      template: Path.resolve("template/index.html"),
-      filename: "index.html",
-    })
-  ],
-  optimization: {
-    splitChunks: {
-      name: process.env.NODE_ENV !== "production", //  set splitChunks.name to false for production builds so that it doesn't change names unnecessarily
-      chunks: "all", // split code in app and node_modules into bundle and vendor.bundle.js
-      maxInitialRequests: Infinity,
-      minSize: 0,
-      cacheGroups: {
-        // keep splitting the node_module chunks
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          chunks: "all",
-          name(module) {
-            const packageName = module.context.match(
-              /[\\/]node_modules[\\/](.*?)([\\/]|$)/
-            )[1];
-            return `npm.${packageName.replace("@", "")}`;
-          }
+      https: false,
+      port: 3000
+    },
+    devtool: "inline-source-map",
+    module: {
+      rules: [
+        {
+          test: /\.[tj]sx?$/,
+          use: [babelLoader]
         },
-        // includes all code shared between entry points
-        commons: {
-          name: "commons",
-          chunks: "initial",
-          minChunks: 2
+        {
+          test: /\.css/,
+          use: [
+            {
+              loader: MiniCssExtractPlugin.loader,
+              options: { publicPath: "" }
+            },
+            {
+              loader: cssLoader
+            },
+            {
+              loader: postcssLoader,
+              options: {
+                ident: "postcss",
+                plugins: loader => [
+                  autoprefixer(),
+                  atImport({ root: loader.resourcePath }),
+                  postcssPresetEnv()
+                ]
+              }
+            }
+          ]
+        },
+        {
+          test: /\.(jpe?g|png|gif|svg|ico)(\?\S*)?$/i,
+          use: [
+            {
+              loader: fileLoader,
+              options: {
+                limit: 10000,
+                name: "[hash].[ext]"
+              }
+            }
+          ]
+        },
+        {
+          test: /\.(woff|woff2)(\?\S*)?$/i,
+          use: [
+            {
+              loader: urlLoader,
+              options: {
+                limit: 1000,
+                mimetype: "application/font-woff"
+              }
+            }
+          ]
+        },
+        {
+          test: /\.(eot|ttf)(\?\S*)?$/i,
+          use: [fileLoader]
+        }
+      ]
+    },
+    resolve: {
+      extensions: [".js", ".jsx", ".json", ".ts", ".tsx"]
+    },
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: "[name].style.[hash].css"
+      }),
+      isProduction && new OptimizeCssAssetsPlugin({
+        cssProcessorOptions: {
+          zindex: false
+        }
+      }),
+      new webpack.LoaderOptionsPlugin({
+        minimize: true,
+        options: {
+          context: Path.resolve("src")
+        }
+      }),
+      isProduction && new CleanWebpackPlugin(),
+      new StatsWriterPlugin({
+        filename: "../server/stats.json",
+        fields: ["assetsByChunkName", "assets"]
+      }),
+      new HtmlWebpackPlugin({
+        title: "babel-test",
+        template: Path.resolve("template/index.html"),
+        filename: "index.html"
+      })
+    ].filter(x => !!x),
+    optimization: {
+      splitChunks: {
+        name: process.env.NODE_ENV !== "production", //  set splitChunks.name to false for production builds so that it doesn't change names unnecessarily
+        chunks: "all", // split code in app and node_modules into bundle and vendor.bundle.js
+        maxInitialRequests: Infinity,
+        minSize: 0,
+        cacheGroups: {
+          // keep splitting the node_module chunks
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            chunks: "all",
+            name(module) {
+              const packageName = module.context.match(
+                /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+              )[1];
+              return `npm.${packageName.replace("@", "")}`;
+            }
+          },
+          // includes all code shared between entry points
+          commons: {
+            name: "commons",
+            chunks: "initial",
+            minChunks: 2
+          }
         }
       }
     }
-  }
+  };
 };
