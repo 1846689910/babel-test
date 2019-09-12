@@ -23,6 +23,9 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const webpack = require("webpack");
+const StatsWriterPlugin = require("webpack-stats-plugin").StatsWriterPlugin;
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+
 
 module.exports = {
   mode: "production",
@@ -69,9 +72,7 @@ module.exports = {
             loader: fileLoader,
             options: {
               limit: 10000,
-              name() {
-                return "[name].[ext]";
-              }
+              name: "[hash].[ext]"
             }
           }
         ]
@@ -112,7 +113,16 @@ module.exports = {
         context: Path.resolve("src")
       }
     }),
-    new CleanWebpackPlugin()
+    new CleanWebpackPlugin(),
+    new StatsWriterPlugin({
+      filename: "../server/stats.json",
+      fields: ["assetsByChunkName", "assets"]
+    }),
+    new HtmlWebpackPlugin({
+      title: "babel-test",
+      template: Path.resolve("template/index.html"),
+      filename: "index.html",
+    })
   ],
   optimization: {
     splitChunks: {
