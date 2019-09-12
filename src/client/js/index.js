@@ -15,3 +15,8 @@ document.body.appendChild((() => {
   h1.style.alignSelf = "center";
   return h1;
 })());
+document.body.appendChild((() => {
+  const span = document.createElement("span");
+  span.innerHTML = `<img src="${logo}" alt="logo" />`;
+  return span;
+})());
